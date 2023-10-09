@@ -1,12 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "abdk-libraries-solidity/ABDKMath64x64.sol";
-
 interface IBattledog {
     struct Player {
         string name;
@@ -33,7 +27,7 @@ contract ProofOfPlay is Ownable, ReentrancyGuard {
     IERC20 public GAMEToken;
     uint256 public totalClaimedRewards;
     uint256 public multiplier = 10;
-    uint256 public timeLock = 24 hours;
+    uint256 public timeLock = 604800;
     uint256 private divisor = 1 ether;
     address private guard; 
     address public battledogs;
@@ -120,7 +114,9 @@ contract ProofOfPlay is Ownable, ReentrancyGuard {
         //Require Miner hasn't claimed within 24hrs
         require(MinerClaims[_tokenId] + timeLock < block.timestamp, "Timelocked.");
         //Require Miner is not on blacklist
-        require(!IBattledog(battledogs).blacklisted(_tokenId), "NFT Blacklisted");       
+        require(!IBattledog(battledogs).blacklisted(_tokenId), "NFT Blacklisted");  
+
+        getMinerData();     
 
     // if statement may work here 
      if (ActiveMiners[_tokenId].activate > 0) {
@@ -133,8 +129,8 @@ contract ProofOfPlay is Ownable, ReentrancyGuard {
                 }
 
         //Calculate Rewards
-        uint256 activatefactor = ActiveMiners[_tokenId].activate * activatebonus;
-        uint256 activate = ActiveMiners[_tokenId].activate * multiplier;
+        uint256 activatefactor = (ActiveMiners[_tokenId].activate - 1) * activatebonus;
+        uint256 activate = ((ActiveMiners[_tokenId].activate - 1)) * multiplier;
         uint256 level = ((ActiveMiners[_tokenId].level - Collectors[_tokenId].level) * levelbonus) + activatefactor;
         uint256 fights = ((ActiveMiners[_tokenId].fights - Collectors[_tokenId].fights) * fightsbonus) + activatefactor;
         uint256 wins = ((ActiveMiners[_tokenId].wins - Collectors[_tokenId].wins) * winsbonus) + activatefactor;
@@ -219,4 +215,4 @@ contract ProofOfPlay is Ownable, ReentrancyGuard {
         paused = false;
         emit Unpause();
     } 
-}
+}              
