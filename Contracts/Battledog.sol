@@ -136,67 +136,46 @@ contract battledog is ERC721Enumerable, Ownable, ReentrancyGuard {
         COUNTER++;
     }
 
-    function migrateMint(uint256 _type, uint256 _entry, uint256[] calldata _nftid, uint256[] calldata _nftpayout,
-     string[] calldata _nftname, address[] calldata _nftaccount) external onlyOwner {
+    function migrateMint(uint256 _type, uint256 _entry,  uint256[] calldata datalog, uint256[] calldata _nftid, string[] calldata _nftname, 
+    address[] calldata _nftaccount) external onlyOwner {
       uint256 _total = _nftid.length;
           if (_type == 0) {
-          
-            for (uint256 i = _entry; i < _total; i++) {
-            // Create migrated players and map all
-            players[i] = Player({
-                name: _nftname[i],
-                id: _nftid[i],
-                level: 0,
-                attack: 0,
-                defence: 0,
-                fights: 0,
-                wins: 0,
-                payout: _nftpayout[i],
-                activate: 0,
-                history: 0});
-            // Mint a new ERC721 token for the player
-            _mint(_nftaccount[i], COUNTER);
 
-            //Create Blacklist and map it
-            blacklisted[COUNTER] = BlackList({
-                blacklist: false
-            });
-            
-            COUNTER++;
-          }
+                for (uint256 i = 0; i < _total; i++) {
+                uint256 entry = _entry + i;
+                // Create migrated players and map all
+                players[entry] = Player({
+                    name: _nftname[i],
+                    id: entry,
+                    level: 0,
+                    attack: 100,
+                    defence: 100,
+                    fights: 0,
+                    wins: 0,
+                    payout: 0,
+                    activate: 0,
+                    history: 0});
+                // Mint a new ERC721 token for the player
+                _mint(_nftaccount[i], COUNTER);
+                
+                COUNTER++;
+                }
 
-        } else if (_type == 1) {
-
-           for (uint256 i = _entry; i < _total; i++) {
-            // Update players and map all
-            players[i].activate = _nftid[i];
-            players[i].level = _nftpayout[i];
+            } else {
+                
+                for (uint256 i = 0; i < datalog.length; i++) {
+                    uint256 nft = datalog[i];
+                    // Update players and map data
+                    players[nft].level = _nftid[0];
+                    players[nft].attack = _nftid[1];
+                    players[nft].defence = _nftid[2];
+                    players[nft].fights = _nftid[3];
+                    players[nft].wins = _nftid[4];
+                    players[nft].payout = _nftid[5];
+                    players[nft].activate = _nftid[6];
+                    players[nft].history = _nftid[7];
+                }
             }
-
-        } else if (_type == 2 ) {
-
-            for (uint256 i = _entry; i < _total; i++) {
-            // Update players and map all
-            players[i].attack = _nftid[i];
-            players[i].defence = _nftpayout[i];
-            }
-
-        } else if (_type == 3) {
-
-            for (uint256 i = _entry; i < _total; i++) {
-            // Update players and map all
-            players[i].fights = _nftid[i];
-            players[i].history = _nftpayout[i];
-            }
-
-        } else if (_type == 4) {
-
-            for (uint256 i = _entry; i < _total; i++) {
-            // Update players and map all
-            players[i].wins = _nftid[i];
-            }
-          
-        } 
     }
 
     function updateName(uint256 _tokenId, string memory _newName) public nonReentrant {
